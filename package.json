@@ -1,7 +1,7 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "nexkaarya - Next Work. Next You. NexKaarya.",
+  "description": "IndFashion Server",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
