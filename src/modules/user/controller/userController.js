@@ -117,6 +117,7 @@ exports.verifySignupOtp = async (req, res) => {
     // Check if OTP exists in store
     if (!stored) {
       return res.send({
+        
         statusCode: 404,
         success: false,
         message: "OTP expired or not found",
@@ -192,6 +193,8 @@ exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    console.log(req.body);
+
     const user = await User.findOne({ email, status: "Active" });
     if (!user) {
       return res.send({
@@ -202,14 +205,16 @@ exports.loginUser = async (req, res) => {
       });
     }
 
+    console.log(user)
+
     // Match password
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log(isMatch)
     if (!isMatch) {
       return res.send({
         statusCode: 400,
         success: false,
         message: "Invalid email or password",
-
         result: {},
       });
     }
@@ -302,7 +307,7 @@ exports.resendOtp = async (req, res) => {
     await OTP.deleteMany({ email });
 
     // New OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = Date.now() + 5 * 60 * 1000;
 
     await sendEmail(email, "Resend OTP", `Your OTP is ${otp}`);
@@ -318,7 +323,7 @@ exports.resendOtp = async (req, res) => {
       statusCode: 200,
       success: true,
       message: "OTP resent successfully",
-      result: { email },
+      result: { email,otp },
     });
   } catch (error) {
     return res.send({

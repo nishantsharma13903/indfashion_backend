@@ -13,6 +13,12 @@ userRouter.post(
 ); // sends OTP
 userRouter.post("/verify-otp", upload.none(), userController.verifyOtp); // verifies OTP & returns token
 userRouter.post("/login", upload.none(), userController.loginUser); // returns token
+userRouter.post(
+  "/resend-otp",
+  upload.none(),
+  // verifyJWT.decodeToken,
+  userController.resendOtp
+);
 
 // ===== User Profile =====
 userRouter.get(
@@ -35,6 +41,7 @@ userRouter.post(
   verifyJWT.decodeToken,
   userController.addAddress
 );
+
 
 userRouter.post(
   "/update-address",
