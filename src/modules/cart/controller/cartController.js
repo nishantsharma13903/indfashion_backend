@@ -136,3 +136,79 @@ exports.getCart = async (req, res) => {
     });
   }
 };
+
+exports.getCart = async (req, res) => {
+  try {
+    const userId = req.token._id;
+
+    const query = { user: userId };
+
+    let { page = 1, limit = 10 } = req.query;
+    page = Number.parseInt(page);
+    limit = Number.parseInt(limit);
+
+    const skip = (page - 1) * limit;
+
+    // Get user cart
+    const cart = await Cart.findOne(query)
+      .populate({
+        path: "items.product",
+        select: "name images",
+      })
+      .populate({
+        path: "items.variant",
+        select: "color size price originalPrice",
+      })
+      .lean();
+
+    if (!cart) {
+      return res.send({
+        statusCode: 200,
+        success: true,
+        message: "Cart is empty",
+        result: { items: [], totalPrice: 0, totalDiscount: 0, totalPages: 0 },
+      });
+    }
+
+    // Apply pagination on items array
+    const totalRecords = cart.items.length;
+    const paginatedItems = cart.items.slice(skip, skip + limit);
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // Calculate totals only for paginated items
+    let totalPrice = 0;
+    let totalDiscount = 0;
+
+    paginatedItems.forEach((item) => {
+      const price = item.variant?.price || item.product?.price || 0;
+      const originalPrice =
+        item.variant?.originalPrice || item.product?.originalPrice || price;
+
+      totalPrice += price * item.quantity;
+      totalDiscount += (originalPrice - price) * item.quantity;
+    });
+
+    res.send({
+      statusCode: 200,
+      success: true,
+      message: "Cart fetched successfully",
+      result: {
+        _id: cart._id,
+        user: cart.user,
+        items: paginatedItems,
+        totalRecords,
+        totalPages,
+        currentPage: page,
+        totalPrice,
+        totalDiscount,
+      },
+    });
+  } catch (error) {
+    res.send({
+      statusCode: 500,
+      success: false,
+      message: error.message,
+      result: {},
+    });
+  }
+};
