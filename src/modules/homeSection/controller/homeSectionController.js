@@ -182,6 +182,7 @@ exports.getHomepage = async (req, res) => {
           .sort({ discountPrice: 1 })
           .lean();
         product.price = variant ? variant.discountPrice : null;
+        product.variantId = variant ? variant._id : null;
 
         // Wishlist flag
         product.wishlisted = wishlistProductIds.includes(String(product._id));
