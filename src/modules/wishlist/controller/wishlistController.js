@@ -2,6 +2,7 @@ const Wishlist = require("../model/wishlistModel");
 
 exports.addToWishlist = async (req, res) => {
   try {
+    console.log(req.body);
     const { productId, variantId } = req.body;
     const userId = req.token._id;
 
@@ -94,10 +95,14 @@ exports.getWishlist = async (req, res) => {
     const wishlist = await Wishlist.findOne({ user: userId })
       .populate({
         path: "items.product",
-        select: "name images price originalPrice",
+        select: "name images price originalPrice averageRating categoryId",
         match: search
           ? { name: { $regex: search, $options: "i" } }
-          : {} // only apply search if provided
+          : {}, // only apply search if provided
+        populate: {   // 🔑 populate category inside product
+          path: "categoryId",
+          select: "name"
+        }  
       })
       .populate({
         path: "items.variant",
